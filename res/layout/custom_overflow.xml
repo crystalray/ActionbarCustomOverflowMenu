@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/menu_dropdown_panel_holo_light"
+    android:orientation="vertical" >
+    
+    <ListView 
+        android:id="@+id/actions_list"
+        android:layout_height="match_parent" 
+        android:layout_width="150dp" 
+        android:divider="@drawable/popup_menu_divider" 
+        android:dividerHeight = "1px"
+        android:scrollingCache="false" 
+        android:listSelector="@drawable/list_selector_holo_light"/>
+    
+</LinearLayout>

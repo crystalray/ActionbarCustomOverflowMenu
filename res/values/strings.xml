@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ActionbarCustomOverflowMenu</string>
+    <string name="action_more">More</string>
+    <string name="action_search">Search</string>
+    <string name="action_compose">Compose</string>
+    <string name="action_mail">Mail</string>
+    <string name="action_add">Add</string>
+    <string name="action_setting">Setting</string>
+    <string name="action_feedback">Feedback</string>
+    <string name="hint">Click menu to show text</string>
+
+</resources>
