@@ -15,6 +15,15 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:actionBarStyle">@style/actionBarStyle</item>
+    </style>
+    
+    <style name="actionBarStyle" parent="android:Widget.ActionBar">
+        <item name="android:background">#ffffff</item>
     </style>
 
+    <style name="PopupAnimation" parent="android:Animation" mce_bogus="1">         
+        <item name="android:windowEnterAnimation">@anim/popup_enter</item>    
+        <item name="android:windowExitAnimation">@anim/popup_exit</item>    
+    </style>
 </resources>

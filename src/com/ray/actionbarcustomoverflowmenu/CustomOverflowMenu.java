@@ -1,5 +1,10 @@
 package com.ray.actionbarcustomoverflowmenu;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -21,7 +26,8 @@ public class CustomOverflowMenu extends PopupWindow {
 	
 	public static final int TITLE_LEFT = 0;
 	public static final int TITLE_RIGHT = 1;
-	protected final int LIST_PADDING = 10;
+	private static final int RIGHT_PADDING = 12;
+	private static final int TOP_PADDING = 6;
 	
 	private Context mContext;
 	private Rect mRect = new Rect();
@@ -34,12 +40,35 @@ public class CustomOverflowMenu extends PopupWindow {
 	
 	private OnItemOnClickListener mItemOnClickListener;
 	private ListView mListView;
-	private ActionItem[] mActionItems;
+	private List<ActionMenu> mActionItems = new ArrayList<ActionMenu>();
+    private ActionsAdapter mActionsAdapter;
 	
 	public static interface OnItemOnClickListener{
-		public void onItemClick(ActionItem item , int position);
+		public void onItemClick(ActionMenu item , int position);
 	}
 	
+	public static class ActionMenu {
+	    public int mImgRes;
+	    public int mTitle;
+	    public int mItemId;
+	    
+	    public ActionMenu(int titleId, int drawableId, int itemId){
+	        this.mTitle = titleId;
+	        this.mImgRes = drawableId;
+	        this.mItemId = itemId;
+	    }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof ActionMenu) {
+                ActionMenu actionItem = (ActionMenu) o;
+                if(actionItem.mItemId == this.mItemId)
+                    return true;
+            }
+            return false;
+        }
+	    
+	}
 	
 	public CustomOverflowMenu(Context context){
 		this(context, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -55,7 +84,7 @@ public class CustomOverflowMenu extends PopupWindow {
 		setWidth(width);
 		setHeight(height);
 		setBackgroundDrawable(new BitmapDrawable());
-		
+		setAnimationStyle(R.style.PopupAnimation);
 		
 		setContentView(LayoutInflater.from(mContext).inflate(R.layout.custom_overflow, null));
 		mListView = (ListView) getContentView().findViewById(R.id.actions_list);
@@ -66,24 +95,69 @@ public class CustomOverflowMenu extends PopupWindow {
 					long arg3) {
 				dismiss();
 				if(mItemOnClickListener != null)
-					mItemOnClickListener.onItemClick(mActionItems[index], index);
+					mItemOnClickListener.onItemClick(mActionItems.get(index), index);
 			}
-		}); 
+		});
+		mActionsAdapter = new ActionsAdapter(mContext);
+		mListView.setAdapter(mActionsAdapter);
 	}
 	
-	public ActionItem getAction(int position){
-		if(position < 0 || position > mActionItems.length)
+	public ActionMenu getAction(int position){
+		if(position < 0 || position > mActionItems.size())
 			return null;
-		return mActionItems[position];
+		return mActionItems.get(position);
 	}
 	
 	public void setDirection(int direction){
-		this.mDirection = direction;
+		mDirection = direction;
 	}
 	
-	public void setActions(ActionItem[] actions){
-		this.mActionItems = actions;
-		mListView.setAdapter(new ActionsAdapter(mContext)) ;
+	public void setActions(List<ActionMenu> actions){
+		mActionItems = actions;
+		mActionsAdapter.notifyDataSetChanged();
+	}
+	
+	public void addAction(ActionMenu action){
+	    mActionItems.add(action);
+	    mActionsAdapter.notifyDataSetChanged();
+	}
+	
+	public void removeAction(ActionMenu action){
+	    mActionItems.remove(action);
+        mActionsAdapter.notifyDataSetChanged();
+	}
+	
+	public static final int CUSTOM_MENU_ADD_ACCOUNT = 0;
+	public static final int CUSTOM_MENU_SETTING = 1;
+	public static final int CUSTOM_MENU_FEEDBACK = 2;
+	
+	public static final int CUSTOM_MENU_RESEND = 3;
+	
+	 private static final HashMap<Integer,ActionMenu> sMenus = new HashMap<Integer,ActionMenu>();
+	    static {
+	        sMenus.put(CUSTOM_MENU_ADD_ACCOUNT,new ActionMenu(R.string.action_add, R.drawable.ic_add, CUSTOM_MENU_ADD_ACCOUNT));
+	        sMenus.put(CUSTOM_MENU_SETTING,new ActionMenu(R.string.action_setting, R.drawable.ic_setting, CUSTOM_MENU_SETTING));
+	        sMenus.put(CUSTOM_MENU_FEEDBACK,new ActionMenu(R.string.action_feedback, R.drawable.ic_feedback, CUSTOM_MENU_FEEDBACK));
+	        sMenus.put(CUSTOM_MENU_RESEND,new ActionMenu(R.string.action_mail, R.drawable.ic_resend, CUSTOM_MENU_RESEND));
+	    }
+	
+	public void initHomeActions(){
+	    List<ActionMenu> actions = new ArrayList<ActionMenu>();
+	    actions.add(sMenus.get(CUSTOM_MENU_ADD_ACCOUNT));
+	    actions.add(sMenus.get(CUSTOM_MENU_SETTING));
+	    actions.add(sMenus.get(CUSTOM_MENU_FEEDBACK));
+	    setActions(actions);
+	}
+	
+	public void refreshResendAction(boolean isVisiable){
+	    if(isVisiable){
+	        if(!mActionItems.contains(sMenus.get(CUSTOM_MENU_RESEND)))
+	            addAction(sMenus.get(CUSTOM_MENU_RESEND));
+	    }
+	    else{
+	        if(mActionItems.contains(sMenus.get(CUSTOM_MENU_RESEND)))
+	            removeAction(sMenus.get(CUSTOM_MENU_RESEND));
+	    }
 	}
 	
 	public void setItemOnClickListener(OnItemOnClickListener onItemOnClickListener){
@@ -94,7 +168,7 @@ public class CustomOverflowMenu extends PopupWindow {
 		view.getLocationOnScreen(mLocation);
 		mRect.set(mLocation[0], mLocation[1], mLocation[0] + view.getWidth(),
 				mLocation[1] + view.getHeight());
-		showAtLocation(view, mPopupGravity, mScreenWidth - LIST_PADDING - (getWidth()/2), mRect.bottom);
+		showAtLocation(view, mPopupGravity, mScreenWidth - RIGHT_PADDING - (getWidth()/2), mRect.bottom - dip2px(mContext, TOP_PADDING));
 	}
 	
 	static class ViewHolder {
@@ -117,17 +191,17 @@ public class CustomOverflowMenu extends PopupWindow {
 		
 		@Override
 		public Object getItem(int position) {
-			return mActionItems[position];
+			return mActionItems.get(position);
 		}
 		
 		@Override
 		public int getCount() {
-			return mActionItems.length;
+			return mActionItems.size();
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			ActionItem item = mActionItems[position];
+			ActionMenu item = mActionItems.get(position);
 			ViewHolder holder;
 			if (convertView == null) {
 				convertView = inflater.inflate(R.layout.overflow_item, parent, false);
@@ -144,5 +218,10 @@ public class CustomOverflowMenu extends PopupWindow {
 		}
 		
 	}
+	
+	public static int dip2px(Context context, float dipValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dipValue * scale + 0.5f);
+    }
 	
 }
